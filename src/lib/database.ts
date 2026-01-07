@@ -1,7 +1,14 @@
 import { supabase } from './supabase'
 import type { Patient, PatientVisit, Drug, Prescription, LabResult, User } from '@/types'
 
+function checkSupabase() {
+  if (!supabase) {
+    throw new Error('Database connection not ready. Please try again.')
+  }
+}
+
 export async function searchPatients(query: string) {
+  checkSupabase()
   const { data, error } = await supabase
     .from('patients')
     .select('*')

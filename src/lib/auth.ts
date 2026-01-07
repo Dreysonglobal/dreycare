@@ -2,6 +2,12 @@ import { supabase } from './supabase'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import type { User } from '@/types'
 
+function checkSupabase() {
+  if (!supabase) {
+    throw new Error('Supabase client not initialized. Please refresh the page.')
+  }
+}
+
 export async function signIn(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -59,6 +65,7 @@ export async function getCurrentUser() {
 }
 
 export async function setOnlineStatus(userId: string) {
+  checkSupabase()
   await supabase.from('online_users').upsert({
     user_id: userId,
     last_seen: new Date().toISOString(),
@@ -69,10 +76,12 @@ export async function setOnlineStatus(userId: string) {
 }
 
 export async function setOfflineStatus(userId: string) {
+  checkSupabase()
   await supabase.from('online_users').delete().eq('user_id', userId)
   await supabase.from('users').update({ is_online: false }).eq('id', userId)
 }
 
 export function subscribeToAuthStateChange(callback: (event: string, session: any) => void) {
+  checkSupabase()
   return supabase.auth.onAuthStateChange(callback)
 }
