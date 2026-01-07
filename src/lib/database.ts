@@ -332,7 +332,7 @@ export async function getAllStaff() {
   const { data, error } = await supabase
     .from('users')
     .select('*')
-    .order('role', 'name')
+    .order('name')
 
   if (error) throw error
   return data as User[]

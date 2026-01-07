@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { LogOut, Search, Plus, UserPlus, Send, User, Activity } from 'lucide-react'
+import { LogOut, Search, Plus, UserPlus, Send, User as UserIcon, Activity } from 'lucide-react'
 import { searchPatients, getPatientById, createPatient, createPatientVisit, getOnlineDoctors, updateVisit, getPatientVisits } from '@/lib/database'
 import { signOut } from '@/lib/auth'
 import type { Patient, User } from '@/types'
@@ -131,13 +131,13 @@ export default function FrontDeskDashboard() {
     try {
       await createPatientVisit({
         patient_id: selectedPatient.id,
-        weight: newVisit.weight ? parseFloat(newVisit.weight) : null,
-        blood_pressure_systolic: newVisit.blood_pressure_systolic ? parseInt(newVisit.blood_pressure_systolic) : null,
-        blood_pressure_diastolic: newVisit.blood_pressure_diastolic ? parseInt(newVisit.blood_pressure_diastolic) : null,
-        temperature: newVisit.temperature ? parseFloat(newVisit.temperature) : null,
-        pulse_rate: newVisit.pulse_rate ? parseInt(newVisit.pulse_rate) : null,
-        respiratory_rate: newVisit.respiratory_rate ? parseInt(newVisit.respiratory_rate) : null,
-        chief_complaint: newVisit.chief_complaint || null,
+        weight: newVisit.weight ? parseFloat(newVisit.weight) : undefined,
+        blood_pressure_systolic: newVisit.blood_pressure_systolic ? parseInt(newVisit.blood_pressure_systolic) : undefined,
+        blood_pressure_diastolic: newVisit.blood_pressure_diastolic ? parseInt(newVisit.blood_pressure_diastolic) : undefined,
+        temperature: newVisit.temperature ? parseFloat(newVisit.temperature) : undefined,
+        pulse_rate: newVisit.pulse_rate ? parseInt(newVisit.pulse_rate) : undefined,
+        respiratory_rate: newVisit.respiratory_rate ? parseInt(newVisit.respiratory_rate) : undefined,
+        chief_complaint: newVisit.chief_complaint || undefined,
         created_by: appUser!.id,
         assigned_doctor_id: newVisit.assigned_doctor_id,
         status: 'in_consultation',
@@ -288,7 +288,7 @@ export default function FrontDeskDashboard() {
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <User className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+                    <UserIcon className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
                     Patient Details
                   </h2>
                   <button
