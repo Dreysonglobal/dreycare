@@ -23,6 +23,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initializeAuth = async () => {
+      if (!supabase) {
+        setLoading(false)
+        return
+      }
+
       try {
         const { authUser: currentAuthUser, appUser: currentAppUser } = await getCurrentUser()
         setAuthUser(currentAuthUser)
@@ -40,25 +45,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initializeAuth()
 
-    const { data: { subscription } } = supabase.auth!.onAuthStateChange(async (_event: string, session: Session | null) => {
-      if (session?.user) {
-        const { appUser: currentAppUser } = await getCurrentUser()
-        setAuthUser(session.user)
-        setAppUser(currentAppUser)
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: string, session: Session | null) => {
+        if (session?.user) {
+          const { appUser: currentAppUser } = await getCurrentUser()
+          setAuthUser(session.user)
+          setAppUser(currentAppUser)
 
-        if (currentAppUser) {
-          await setOnlineStatus(currentAppUser.id)
+          if (currentAppUser) {
+            await setOnlineStatus(currentAppUser.id)
+          }
+        } else {
+          if (appUser) {
+            await setOfflineStatus(appUser.id)
+          }
+          setAuthUser(null)
+          setAppUser(null)
         }
-      } else {
-        if (appUser) {
-          await setOfflineStatus(appUser.id)
-        }
-        setAuthUser(null)
-        setAppUser(null)
-      }
-    })
+      })
 
-    return () => subscription.unsubscribe()
+      return () => subscription.unsubscribe()
+    }
   }, [])
 
   const signIn = async (email: string, password: string) => {
@@ -75,7 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (appUser) {
       await setOfflineStatus(appUser.id)
     }
-    await supabase.auth.signOut()
+    if (supabase) {
+      await supabase.auth.signOut()
+    }
     setAuthUser(null)
     setAppUser(null)
   }
