@@ -37,7 +37,7 @@ export interface PatientVisit {
   visit_date: string
   created_by: string
   assigned_doctor_id?: string
-  status: 'pending' | 'in_consultation' | 'lab_requested' | 'pharmacy_requested' | 'completed' | 'billing'
+  status: 'pending' | 'in_consultation' | 'lab_requested' | 'pharmacy_requested' | 'frontdesk_requested' | 'completed' | 'billing'
   current_location: 'frontdesk' | 'doctor' | 'lab' | 'pharmacy' | 'accounts'
   diagnosis?: string
   notes?: string
