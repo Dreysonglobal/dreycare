@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { User as SupabaseUser } from '@supabase/supabase-js'
+import { User as SupabaseUser, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@/types'
 import { getCurrentUser, setOnlineStatus, setOfflineStatus } from '@/lib/auth'
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initializeAuth()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth!.onAuthStateChange(async (_event: string, session: Session | null) => {
       if (session?.user) {
         const { appUser: currentAppUser } = await getCurrentUser()
         setAuthUser(session.user)
