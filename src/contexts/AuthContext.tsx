@@ -1,0 +1,96 @@
+'use client'
+
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { User as SupabaseUser } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
+import type { User } from '@/types'
+import { getCurrentUser, setOnlineStatus, setOfflineStatus } from '@/lib/auth'
+
+interface AuthContextType {
+  authUser: SupabaseUser | null
+  appUser: User | null
+  loading: boolean
+  signIn: (email: string, password: string) => Promise<void>
+  signOut: () => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null)
+  const [appUser, setAppUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const { authUser: currentAuthUser, appUser: currentAppUser } = await getCurrentUser()
+        setAuthUser(currentAuthUser)
+        setAppUser(currentAppUser)
+
+        if (currentAppUser) {
+          await setOnlineStatus(currentAppUser.id)
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    initializeAuth()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const { appUser: currentAppUser } = await getCurrentUser()
+        setAuthUser(session.user)
+        setAppUser(currentAppUser)
+
+        if (currentAppUser) {
+          await setOnlineStatus(currentAppUser.id)
+        }
+      } else {
+        if (appUser) {
+          await setOfflineStatus(appUser.id)
+        }
+        setAuthUser(null)
+        setAppUser(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [appUser])
+
+  const signIn = async (email: string, password: string) => {
+    const { authUser: newAuthUser, appUser: newAppUser } = await getCurrentUser()
+    setAuthUser(newAuthUser)
+    setAppUser(newAppUser)
+
+    if (newAppUser) {
+      await setOnlineStatus(newAppUser.id)
+    }
+  }
+
+  const signOut = async () => {
+    if (appUser) {
+      await setOfflineStatus(appUser.id)
+    }
+    await supabase.auth.signOut()
+    setAuthUser(null)
+    setAppUser(null)
+  }
+
+  return (
+    <AuthContext.Provider value={{ authUser, appUser, loading, signIn, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}
