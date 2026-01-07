@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { LogOut, Pill, Plus, AlertTriangle, Check, Send, Minus } from 'lucide-react'
-import { getVisitByLocation, getVisitById, updateVisit, getDrugInventory, updateDrug, reduceDrugStock } from '@/lib/database'
+import { LogOut, Pill, Plus, AlertTriangle, Check, Send, Minus, Trash2, Edit, X } from 'lucide-react'
+import { getVisitByLocation, getVisitById, updateVisit, getDrugInventory, updateDrug, reduceDrugStock, createDrug, deleteDrug } from '@/lib/database'
 import { signOut } from '@/lib/auth'
 import type { Drug } from '@/types'
 import { format } from 'date-fns'
@@ -29,15 +29,18 @@ export default function PharmacyDashboard() {
     reorder_level: '',
     unit: 'tablets'
   })
+  const [editingDrug, setEditingDrug] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!appUser || appUser.role !== 'pharmacy') {
+    if (appUser && appUser.role !== 'pharmacy') {
       router.push('/')
       return
     }
 
-    loadVisits()
-    loadDrugs()
+    if (appUser) {
+      loadVisits()
+      loadDrugs()
+    }
   }, [appUser, router])
 
   const loadVisits = async () => {
@@ -55,8 +58,9 @@ export default function PharmacyDashboard() {
     try {
       const data = await getDrugInventory()
       setDrugs(data)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading drugs:', error)
+      alert(`Failed to load drugs: ${error.message || 'Unknown error'}`)
     }
   }
 
@@ -92,9 +96,9 @@ export default function PharmacyDashboard() {
       })
       setSelectedVisit(null)
       await loadVisits()
-    } catch (error) {
-      console.error('Error sending visit:', error)
-      alert('Failed to send to accounts')
+    } catch (error: any) {
+      console.error('Error loading visits:', error)
+      alert(`Failed to load visits: ${error.message || 'Unknown error'}`)
     } finally {
       setSending(false)
     }
@@ -103,22 +107,79 @@ export default function PharmacyDashboard() {
   const handleAddDrug = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await updateDrug(newDrug.name, {})
-      setNewDrug({
-        name: '',
-        generic_name: '',
-        category: '',
-        purchase_price: '',
-        sales_price: '',
-        stock_quantity: '',
-        reorder_level: '',
-        unit: 'tablets'
-      })
-      setShowInventory(false)
+      if (editingDrug) {
+        await updateDrug(editingDrug, {
+          name: newDrug.name,
+          generic_name: newDrug.generic_name,
+          description: '',
+          category: newDrug.category,
+          purchase_price: parseFloat(newDrug.purchase_price),
+          sales_price: parseFloat(newDrug.sales_price),
+          stock_quantity: parseInt(newDrug.stock_quantity),
+          reorder_level: parseInt(newDrug.reorder_level),
+          unit: newDrug.unit
+        })
+      } else {
+        await createDrug({
+          name: newDrug.name,
+          generic_name: newDrug.generic_name,
+          description: '',
+          category: newDrug.category,
+          purchase_price: parseFloat(newDrug.purchase_price),
+          sales_price: parseFloat(newDrug.sales_price),
+          stock_quantity: parseInt(newDrug.stock_quantity),
+          reorder_level: parseInt(newDrug.reorder_level),
+          unit: newDrug.unit
+        })
+      }
+      resetDrugForm()
       loadDrugs()
-    } catch (error) {
-      console.error('Error adding drug:', error)
-      alert('Failed to add drug')
+    } catch (error: any) {
+      console.error('Error saving drug:', error)
+      alert(`Failed to save drug: ${error.message || 'Unknown error'}`)
+    }
+  }
+
+  const resetDrugForm = () => {
+    setNewDrug({
+      name: '',
+      generic_name: '',
+      category: '',
+      purchase_price: '',
+      sales_price: '',
+      stock_quantity: '',
+      reorder_level: '',
+      unit: 'tablets'
+    })
+    setEditingDrug(null)
+  }
+
+  const handleEditDrug = (drug: Drug) => {
+    setNewDrug({
+      name: drug.name,
+      generic_name: drug.generic_name || '',
+      category: drug.category || '',
+      purchase_price: drug.purchase_price.toString(),
+      sales_price: drug.sales_price.toString(),
+      stock_quantity: drug.stock_quantity.toString(),
+      reorder_level: drug.reorder_level.toString(),
+      unit: drug.unit
+    })
+    setEditingDrug(drug.id)
+    setShowInventory(true)
+  }
+
+  const handleDeleteDrug = async (drugId: string) => {
+    if (!confirm('Are you sure you want to delete this drug?')) {
+      return
+    }
+
+    try {
+      await deleteDrug(drugId)
+      loadDrugs()
+    } catch (error: any) {
+      console.error('Error deleting drug:', error)
+      alert(`Failed to delete drug: ${error.message || 'Unknown error'}`)
     }
   }
 
@@ -206,7 +267,9 @@ export default function PharmacyDashboard() {
               </div>
 
               <form id="addDrugForm" onSubmit={handleAddDrug} className="hidden p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Add New Drug</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  {editingDrug ? 'Edit Drug' : 'Add New Drug'}
+                </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <input
                     type="text"
@@ -276,12 +339,32 @@ export default function PharmacyDashboard() {
                     required
                   />
                 </div>
-                <div className="mt-4 flex justify-end">
+                <div className="mt-4 flex justify-end gap-2">
+                  {editingDrug && (
+                    <button
+                      type="button"
+                      onClick={resetDrugForm}
+                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2"
+                    >
+                      <X className="w-4 h-4" />
+                      Cancel
+                    </button>
+                  )}
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
                   >
-                    Add Drug
+                    {editingDrug ? (
+                      <>
+                        <Edit className="w-4 h-4" />
+                        Update Drug
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4" />
+                        Add Drug
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
@@ -296,6 +379,7 @@ export default function PharmacyDashboard() {
                       <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400">Purchase</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400">Sales</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400">Status</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -319,8 +403,8 @@ export default function PharmacyDashboard() {
                             {drug.stock_quantity} {drug.unit}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">${drug.purchase_price.toFixed(2)}</td>
-                        <td className="py-3 px-4 text-gray-900 dark:text-white font-medium">${drug.sales_price.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">₦{drug.purchase_price.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-gray-900 dark:text-white font-medium">₦{drug.sales_price.toFixed(2)}</td>
                         <td className="py-3 px-4">
                           {drug.stock_quantity === 0 ? (
                             <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">Out of Stock</span>
@@ -329,6 +413,24 @@ export default function PharmacyDashboard() {
                           ) : (
                             <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">In Stock</span>
                           )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditDrug(drug)}
+                              className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                              title="Edit drug"
+                            >
+                              <Edit className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteDrug(drug.id)}
+                              className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                              title="Delete drug"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -393,7 +495,7 @@ export default function PharmacyDashboard() {
                                 {prescription.dosage} - {prescription.frequency} - {prescription.duration}
                               </p>
                               <p className="text-sm text-gray-900 dark:text-white mt-2 font-medium">
-                                Price: ${prescription.drug?.sales_price?.toFixed(2)}
+                                Price: ₦{prescription.drug?.sales_price?.toFixed(2)}
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -426,7 +528,7 @@ export default function PharmacyDashboard() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">Total Bill</p>
                           <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                            ${selectedVisit.prescriptions?.reduce((sum: number, p: any) => sum + (p.drug?.sales_price || 0), 0).toFixed(2)}
+                            ₦{selectedVisit.prescriptions?.reduce((sum: number, p: any) => sum + (p.drug?.sales_price || 0), 0).toFixed(2)}
                           </p>
                         </div>
                         <button

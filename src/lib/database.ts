@@ -168,6 +168,15 @@ export async function updateDrug(id: string, drug: Partial<Drug>) {
   return data as Drug
 }
 
+export async function deleteDrug(id: string) {
+  const { error } = await supabase
+    .from('drugs')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw error
+}
+
 export async function reduceDrugStock(drugId: string, quantity: number = 1) {
   const { data, error } = await supabase.rpc('reduce_stock', {
     drug_id: drugId,

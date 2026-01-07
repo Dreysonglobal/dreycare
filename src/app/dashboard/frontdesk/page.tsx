@@ -46,24 +46,26 @@ export default function FrontDeskDashboard() {
   })
 
   useEffect(() => {
-    if (!appUser || appUser.role !== 'frontdesk') {
+    if (appUser && appUser.role !== 'frontdesk') {
       router.push('/')
       return
     }
 
-    loadOnlineDoctors()
-    setLoading(false)
+    if (appUser) {
+      loadOnlineDoctors()
+      setLoading(false)
+    }
   }, [appUser, router])
 
   useEffect(() => {
     if (searchQuery.length >= 2) {
-      searchPatients()
+      handleSearchPatients()
     } else {
       setSearchResults([])
     }
   }, [searchQuery])
 
-  const searchPatients = async () => {
+  const handleSearchPatients = async () => {
     try {
       const results = await searchPatients(searchQuery)
       setSearchResults(results)

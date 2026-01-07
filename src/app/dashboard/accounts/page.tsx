@@ -111,9 +111,9 @@ Phone: ${selectedVisit?.patient?.phone_number}
 
 ----------------------------
 ITEMS:
-${items.map(item => `${item.name} x${item.quantity} - $${item.total_price.toFixed(2)}`).join('\n')}
+${items.map(item => `${item.name} x${item.quantity} - ₦${item.total_price.toFixed(2)}`).join('\n')}
 ----------------------------
-TOTAL: $${total.toFixed(2)}
+TOTAL: ₦${total.toFixed(2)}
 
 Thank you for choosing DreyCare Hospital!
     `
@@ -254,11 +254,11 @@ Thank you for choosing DreyCare Hospital!
                           <div>
                             <p className="font-medium text-gray-900 dark:text-white">{item.name}</p>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Qty: {item.quantity} × ${item.unit_price.toFixed(2)}
+                              Qty: {item.quantity} × ₦{item.unit_price.toFixed(2)}
                             </p>
                           </div>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            ${item.total_price.toFixed(2)}
+                            ₦{item.total_price.toFixed(2)}
                           </p>
                         </div>
                       ))}
@@ -269,7 +269,7 @@ Thank you for choosing DreyCare Hospital!
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">Total Amount Due</p>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">${total.toFixed(2)}</p>
+                        <p className="text-3xl font-bold text-gray-900 dark:text-white">₦{total.toFixed(2)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>

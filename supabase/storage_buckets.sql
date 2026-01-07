@@ -47,7 +47,7 @@ END $$;
 -- ============================================
 
 -- Allow authenticated users to view buckets
-CREATE POLICY IF NOT EXISTS "Authenticated users can view buckets"
+CREATE POLICY "Authenticated users can view buckets"
 ON storage.buckets FOR SELECT
 TO authenticated
 USING (true);
@@ -69,7 +69,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Allow users to insert files into their assigned buckets based on role
-CREATE POLICY IF NOT EXISTS "Users can upload to patient-documents"
+CREATE POLICY "Users can upload to patient-documents"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (
@@ -77,7 +77,7 @@ WITH CHECK (
     AND (has_role('frontdesk') OR has_role('admin'))
 );
 
-CREATE POLICY IF NOT EXISTS "Users can upload to lab-results"
+CREATE POLICY "Users can upload to lab-results"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (
@@ -85,7 +85,7 @@ WITH CHECK (
     AND (has_role('lab') OR has_role('admin'))
 );
 
-CREATE POLICY IF NOT EXISTS "Users can upload to prescriptions"
+CREATE POLICY "Users can upload to prescriptions"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (
@@ -93,7 +93,7 @@ WITH CHECK (
     AND (has_role('doctor') OR has_role('admin'))
 );
 
-CREATE POLICY IF NOT EXISTS "Users can upload to medical-images"
+CREATE POLICY "Users can upload to medical-images"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (
@@ -101,7 +101,7 @@ WITH CHECK (
     AND (has_role('lab') OR has_role('doctor') OR has_role('admin'))
 );
 
-CREATE POLICY IF NOT EXISTS "Users can upload to insurance-documents"
+CREATE POLICY "Users can upload to insurance-documents"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (
@@ -110,14 +110,14 @@ WITH CHECK (
 );
 
 -- Allow read access based on bucket
-CREATE POLICY IF NOT EXISTS "Authenticated users can view patient-documents"
+CREATE POLICY "Authenticated users can view patient-documents"
 ON storage.objects FOR SELECT
 TO authenticated
 USING (
     bucket_id = 'patient-documents'
 );
 
-CREATE POLICY IF NOT EXISTS "Medical staff can view lab-results"
+CREATE POLICY "Medical staff can view lab-results"
 ON storage.objects FOR SELECT
 TO authenticated
 USING (
@@ -125,7 +125,7 @@ USING (
     AND (has_role('doctor') OR has_role('lab') OR has_role('admin'))
 );
 
-CREATE POLICY IF NOT EXISTS "Medical staff can view prescriptions"
+CREATE POLICY "Medical staff can view prescriptions"
 ON storage.objects FOR SELECT
 TO authenticated
 USING (
@@ -133,7 +133,7 @@ USING (
     AND (has_role('doctor') OR has_role('pharmacy') OR has_role('admin'))
 );
 
-CREATE POLICY IF NOT EXISTS "Medical staff can view medical-images"
+CREATE POLICY "Medical staff can view medical-images"
 ON storage.objects FOR SELECT
 TO authenticated
 USING (
@@ -141,7 +141,7 @@ USING (
     AND (has_role('doctor') OR has_role('lab') OR has_role('admin'))
 );
 
-CREATE POLICY IF NOT EXISTS "Authenticated users can view insurance-documents"
+CREATE POLICY "Authenticated users can view insurance-documents"
 ON storage.objects FOR SELECT
 TO authenticated
 USING (
@@ -149,7 +149,7 @@ USING (
 );
 
 -- Allow updates/deletes based on role
-CREATE POLICY IF NOT EXISTS "Frontdesk and admin can update patient-documents"
+CREATE POLICY "Frontdesk and admin can update patient-documents"
 ON storage.objects FOR UPDATE
 TO authenticated
 USING (
@@ -157,7 +157,7 @@ USING (
     AND (has_role('frontdesk') OR has_role('admin'))
 );
 
-CREATE POLICY IF NOT EXISTS "Lab and admin can update lab-results"
+CREATE POLICY "Lab and admin can update lab-results"
 ON storage.objects FOR UPDATE
 TO authenticated
 USING (
@@ -165,7 +165,7 @@ USING (
     AND (has_role('lab') OR has_role('admin'))
 );
 
-CREATE POLICY IF NOT EXISTS "Admin can delete files"
+CREATE POLICY "Admin can delete files"
 ON storage.objects FOR DELETE
 TO authenticated
 USING (has_role('admin'));

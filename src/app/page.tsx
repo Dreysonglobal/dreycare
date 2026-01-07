@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { signIn as supabaseSignIn } from '@/lib/auth'
@@ -14,10 +14,11 @@ export default function LoginPage() {
   const { appUser } = useAuth()
   const router = useRouter()
 
-  if (appUser) {
-    router.push('/dashboard')
-    return null
-  }
+  useEffect(() => {
+    if (appUser) {
+      router.push('/dashboard')
+    }
+  }, [appUser, router])
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()

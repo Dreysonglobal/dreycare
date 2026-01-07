@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [appUser])
+  }, [])
 
   const signIn = async (email: string, password: string) => {
     const { authUser: newAuthUser, appUser: newAppUser } = await getCurrentUser()

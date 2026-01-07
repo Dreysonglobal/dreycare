@@ -308,7 +308,7 @@ export default function DoctorDashboard() {
                       >
                         <option value="">Select a drug to add...</option>
                         {drugs.filter(d => d.stock_quantity > 0).map(drug => (
-                          <option key={drug.id} value={drug.id}>{drug.name} - ${drug.sales_price} (Stock: {drug.stock_quantity})</option>
+                          <option key={drug.id} value={drug.id}>{drug.name} - ₦{drug.sales_price} (Stock: {drug.stock_quantity})</option>
                         ))}
                       </select>
 
