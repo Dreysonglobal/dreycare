@@ -69,8 +69,8 @@ export async function getPatientVisits(patientId: string) {
     .from('patient_visits')
     .select(`
       *,
-      doctor:users!patient_visits_assigned_doctor_id_fkey(name),
-      creator:users!patient_visits_created_by_fkey(name)
+      doctor:users!patient_visits_assigned_doctor_id_fkey(*),
+      creator:users!patient_visits_created_by_fkey(*)
     `)
     .eq('patient_id', patientId)
     .order('visit_date', { ascending: false })
@@ -85,8 +85,8 @@ export async function getVisitById(id: string) {
     .select(`
       *,
       patient:patients(*),
-      doctor:users!patient_visits_assigned_doctor_id_fkey(name),
-      creator:users!patient_visits_created_by_fkey(name),
+      doctor:users!patient_visits_assigned_doctor_id_fkey(*),
+      creator:users!patient_visits_created_by_fkey(*),
       prescriptions:prescriptions(*, drug:drugs(*)),
       lab_results:lab_results(*)
     `)
@@ -247,7 +247,7 @@ export async function getVisitByLocation(role: string) {
     .select(`
       *,
       patient:patients(*),
-      doctor:users!patient_visits_assigned_doctor_id_fkey(name)
+      doctor:users!patient_visits_assigned_doctor_id_fkey(*)
     `)
     .eq('current_location', location)
     .neq('status', 'completed')
@@ -280,8 +280,8 @@ export async function getMessages(userId?: string, role?: string) {
     .from('messages')
     .select(`
       *,
-      from_user:users!messages_from_user_id_fkey(name, role),
-      to_user:users!messages_to_user_id_fkey(name, role)
+      from_user:users!messages_from_user_id_fkey(*),
+      to_user:users!messages_to_user_id_fkey(*)
     `)
     .order('created_at', { ascending: false })
 
@@ -325,8 +325,8 @@ export async function getAllVisits() {
     .select(`
       *,
       patient:patients(*),
-      doctor:users!patient_visits_assigned_doctor_id_fkey(name),
-      creator:users!patient_visits_created_by_fkey(name)
+      doctor:users!patient_visits_assigned_doctor_id_fkey(*),
+      creator:users!patient_visits_created_by_fkey(*)
     `)
     .order('visit_date', { ascending: false })
     .limit(100)
