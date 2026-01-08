@@ -349,7 +349,7 @@ export default function FrontDeskDashboard() {
                                 <p className="font-medium text-gray-900 dark:text-white">
                                   {format(new Date(visit.visit_date), 'PPp')}
                                 </p>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Doctor: {visit.doctor || 'Not assigned'}</p>
+                                 <p className="text-sm text-gray-600 dark:text-gray-400">Doctor: {visit.doctor?.name || 'Not assigned'}</p>
                               </div>
                               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                                 visit.status === 'completed' ? 'bg-green-100 text-green-700' :

@@ -209,7 +209,7 @@ export default function AdminDashboard() {
                     <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
                       {new Date(visit.visit_date).toLocaleDateString()}
                     </td>
-                    <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{visit.doctor || 'Unassigned'}</td>
+                     <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{visit.doctor?.name || 'Unassigned'}</td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                         visit.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
