@@ -9,6 +9,7 @@ function checkSupabase() {
 }
 
 export async function signIn(email: string, password: string) {
+  checkSupabase()
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -37,6 +38,7 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signOut() {
+  checkSupabase()
   const { error } = await supabase.auth.signOut()
   if (error) {
     throw error
@@ -44,6 +46,7 @@ export async function signOut() {
 }
 
 export async function getCurrentUser() {
+  checkSupabase()
   const { data: { user }, error } = await supabase.auth.getUser()
 
   if (error) {
