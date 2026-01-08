@@ -26,11 +26,10 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password)
-      setLoading(false)
-      router.push('/dashboard')
     } catch (err: any) {
-      setLoading(false)
       setError(err.message || 'Failed to sign in')
+    } finally {
+      setLoading(false)
     }
   }
 

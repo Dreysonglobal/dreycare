@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAppUser(currentAppUser)
 
         if (currentAppUser) {
-          await setOnlineStatus(currentAppUser.id)
+          setOnlineStatus(currentAppUser.id)
         }
       } catch (error) {
         console.error('Error initializing auth:', error)
@@ -48,16 +48,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (supabase) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: string, session: Session | null) => {
         if (session?.user) {
-          const { appUser: currentAppUser } = await getCurrentUser()
           setAuthUser(session.user)
+          const { appUser: currentAppUser } = await getCurrentUser()
           setAppUser(currentAppUser)
 
           if (currentAppUser) {
-            await setOnlineStatus(currentAppUser.id)
+            setOnlineStatus(currentAppUser.id)
           }
         } else {
           if (appUser) {
-            await setOfflineStatus(appUser.id)
+            setOfflineStatus(appUser.id)
           }
           setAuthUser(null)
           setAppUser(null)
@@ -74,17 +74,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAppUser(newAppUser)
 
     if (newAppUser) {
-      await setOnlineStatus(newAppUser.id)
+      setOnlineStatus(newAppUser.id)
     }
   }
 
   const signOut = async () => {
-    if (appUser) {
-      await setOfflineStatus(appUser.id)
-    }
+    const userId = appUser?.id
     await supabaseSignOut()
     setAuthUser(null)
     setAppUser(null)
+    
+    if (userId) {
+      setOfflineStatus(userId)
+    }
   }
 
   return (
