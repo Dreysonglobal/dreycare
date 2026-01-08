@@ -20,6 +20,26 @@ export default function DashboardLayout() {
     }
   }, [appUser, loading, isClient, router])
 
+  useEffect(() => {
+    if (!isClient || !appUser) return
+
+    const roleRoutes: Record<string, string> = {
+      admin: '/dashboard/admin',
+      doctor: '/dashboard/doctor',
+      pharmacy: '/dashboard/pharmacy',
+      lab: '/dashboard/lab',
+      frontdesk: '/dashboard/frontdesk',
+      accounts: '/dashboard/accounts'
+    }
+
+    const route = roleRoutes[appUser.role]
+    if (route) {
+      router.push(route)
+    } else {
+      router.push('/')
+    }
+  }, [appUser, isClient, router])
+
   if (loading || !isClient || !appUser) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -28,27 +48,9 @@ export default function DashboardLayout() {
     )
   }
 
-  switch (appUser.role) {
-    case 'admin':
-      router.push('/dashboard/admin')
-      return null
-    case 'doctor':
-      router.push('/dashboard/doctor')
-      return null
-    case 'pharmacy':
-      router.push('/dashboard/pharmacy')
-      return null
-    case 'lab':
-      router.push('/dashboard/lab')
-      return null
-    case 'frontdesk':
-      router.push('/dashboard/frontdesk')
-      return null
-    case 'accounts':
-      router.push('/dashboard/accounts')
-      return null
-    default:
-      router.push('/')
-      return null
-  }
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-cyan-600" />
+    </div>
+  )
 }
