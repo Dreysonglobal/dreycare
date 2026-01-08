@@ -66,19 +66,27 @@ export async function getCurrentUser() {
 
 export async function setOnlineStatus(userId: string) {
   checkSupabase()
-  await supabase.from('online_users').upsert({
-    user_id: userId,
-    last_seen: new Date().toISOString(),
-    expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-  })
+  try {
+    await supabase.from('online_users').upsert({
+      user_id: userId,
+      last_seen: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+    })
 
-  await supabase.from('users').update({ is_online: true }).eq('id', userId)
+    await supabase.from('users').update({ is_online: true }).eq('id', userId)
+  } catch (error) {
+    console.error('Error setting online status:', error)
+  }
 }
 
 export async function setOfflineStatus(userId: string) {
   checkSupabase()
-  await supabase.from('online_users').delete().eq('user_id', userId)
-  await supabase.from('users').update({ is_online: false }).eq('id', userId)
+  try {
+    await supabase.from('online_users').delete().eq('user_id', userId)
+    await supabase.from('users').update({ is_online: false }).eq('id', userId)
+  } catch (error) {
+    console.error('Error setting offline status:', error)
+  }
 }
 
 export function subscribeToAuthStateChange(callback: (event: string, session: any) => void) {

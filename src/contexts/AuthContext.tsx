@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User as SupabaseUser, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@/types'
-import { getCurrentUser, setOnlineStatus, setOfflineStatus } from '@/lib/auth'
+import { signIn as supabaseSignIn, getCurrentUser, setOnlineStatus, setOfflineStatus, signOut as supabaseSignOut } from '@/lib/auth'
 
 interface AuthContextType {
   authUser: SupabaseUser | null
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    const { authUser: newAuthUser, appUser: newAppUser } = await getCurrentUser()
+    const { authUser: newAuthUser, appUser: newAppUser } = await supabaseSignIn(email, password)
     setAuthUser(newAuthUser)
     setAppUser(newAppUser)
 
@@ -82,9 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (appUser) {
       await setOfflineStatus(appUser.id)
     }
-    if (supabase) {
-      await supabase.auth.signOut()
-    }
+    await supabaseSignOut()
     setAuthUser(null)
     setAppUser(null)
   }

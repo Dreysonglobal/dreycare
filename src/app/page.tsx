@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { signIn as supabaseSignIn } from '@/lib/auth'
 import { Activity, Lock, Mail } from 'lucide-react'
 
 export default function LoginPage() {
@@ -11,7 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { appUser } = useAuth()
+  const { appUser, signIn } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -26,7 +25,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const result = await supabaseSignIn(email, password)
+      await signIn(email, password)
       setLoading(false)
       router.push('/dashboard')
     } catch (err: any) {
